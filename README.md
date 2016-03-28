@@ -7,3 +7,5 @@ worse
 rfc6455-compliant websocket implementation
 
 status: **in development**
+
+[documentation](docs/)
