@@ -1,0 +1,25 @@
+{
+  "name": "worse",
+  "version": "0.0.0",
+  "description": "rfc6455 websocket implementation",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/worsews/worse.git"
+  },
+  "keywords": [
+    "ws",
+    "websocket",
+    "realtime",
+    "rfc6455"
+  ],
+  "author": "ivan k <ivan@sq10.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/worsews/worse/issues"
+  },
+  "homepage": "https://github.com/worsews/worse#readme"
+}
