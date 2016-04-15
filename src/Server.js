@@ -13,7 +13,7 @@ export default class WSServer {
   // Optionally pass an `options` object, to override the defaults provided by
   // ServerOptions.
   constructor (options) {
-    this.options = new WSServerOptions(this.options)
+    this.options = new WSServerOptions(options)
 
     // Set of WSServerListeners.
     this.listeners = new Set()
