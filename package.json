@@ -1,6 +1,6 @@
 {
   "name": "worse",
-  "version": "0.0.0",
+  "version": "0.0.0-rc1",
   "description": "rfc6455 websocket implementation",
   "main": "lib/",
   "scripts": {
