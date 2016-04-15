@@ -1,6 +1,4 @@
 'use strict'
 
-module.exports = {
-  Client: require('./Client'),
-  Server: require('./Server')
-}
+export {default as Client} from './Client'
+export {default as Server} from './Server'

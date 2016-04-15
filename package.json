@@ -2,10 +2,13 @@
   "name": "worse",
   "version": "0.0.0-rc1",
   "description": "rfc6455 websocket implementation",
-  "main": "lib/",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
     "test": "standard",
-    "build": "babel -D -d lib src"
+    "build": "npm run clean && npm run babel",
+    "babel": "babel -D -d lib/ src/",
+    "clean": "rimraf lib/"
   },
   "repository": {
     "type": "git",
@@ -37,6 +40,8 @@
     "babel-cli": "^6.7.5",
     "babel-eslint": "^6.0.2",
     "babel-preset-es2015-node4": "^2.1.0",
+    "bluebird": "^3.3.5",
+    "rimraf": "^2.5.2",
     "standard": "^6.0.8"
   }
 }
