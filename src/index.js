@@ -1,4 +1,6 @@
 'use strict'
 
-export Client from './Client'
-export Server from './Server'
+module.exports = {
+  Client: require('./Client'),
+  Server: require('./Server')
+}

@@ -2,9 +2,10 @@
   "name": "worse",
   "version": "0.0.0",
   "description": "rfc6455 websocket implementation",
-  "main": "lib/index.js",
+  "main": "lib/",
   "scripts": {
-    "test": "standard"
+    "test": "standard",
+    "build": "babel -D -d lib src"
   },
   "repository": {
     "type": "git",
@@ -31,5 +32,11 @@
   },
   "dependencies": {
     "promise-limit": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.7.5",
+    "babel-eslint": "^6.0.2",
+    "babel-preset-es2015-node4": "^2.1.0",
+    "standard": "^6.0.8"
   }
 }
