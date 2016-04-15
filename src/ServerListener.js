@@ -14,6 +14,9 @@ export default class WSServerListener {
     // Whether the httpServer that was created is our own.
     // TODO
     this.isHttpServerCreator = false
+
+    // Set of clients that are associated with this listener.
+    this.clients = new Set()
   }
 
   // Attaches the listener. This will (depending on the options)
@@ -43,7 +46,7 @@ export default class WSServerListener {
 
   // Detaches the listener. This will
   //
-  // * Close all connections related to the server with close code 1001
+  // * Close all clients' connections related to the server with close code 1001
   // * Stop listening to WebSocket connections on the http(s) server
   // * If the server is a server that we created, the server is shut down
   //
