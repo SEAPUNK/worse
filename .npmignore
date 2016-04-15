@@ -1,7 +1,7 @@
-node_modules/
-src/
-docs/
-.babelrc
-.gitignore
-README.md
-
+/node_modules/
+/src/
+/docs/
+/.babelrc
+/.gitignore
+/README.md
+/npm-debug.log
