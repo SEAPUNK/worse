@@ -1,4 +1,5 @@
 worse docs
 ===
 
-* [worse.Client](Client/README.md), the websocket client
+* [worse.Client](Client/), the websocket client
+* [worse.Server](Server/), the websocket server

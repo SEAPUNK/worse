@@ -4,7 +4,7 @@
   "description": "rfc6455 websocket implementation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard"
   },
   "repository": {
     "type": "git",
@@ -13,13 +13,23 @@
   "keywords": [
     "ws",
     "websocket",
+    "websockets",
     "realtime",
-    "rfc6455"
+    "rfc6455",
+    "client",
+    "server",
+    "hybi"
   ],
   "author": "ivan k <ivan@sq10.net>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/worsews/worse/issues"
   },
-  "homepage": "https://github.com/worsews/worse#readme"
+  "homepage": "https://github.com/worsews/worse#readme",
+  "standard": {
+    "parser": "babel-eslint"
+  },
+  "dependencies": {
+    "promise-limit": "^2.1.1"
+  }
 }

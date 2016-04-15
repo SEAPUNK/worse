@@ -6,6 +6,8 @@ worse
 
 rfc6455-compliant websocket implementation
 
+**requires node v4 or newer**
+
 status: **in development**
 
 [documentation](docs/)
