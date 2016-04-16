@@ -1,6 +1,6 @@
 'use strict'
 
-import WSServerListenerOptions from './ServerListenerOptions'
+import {WSServerListenerOptions} from './options'
 
 export default class WSServerListener {
   constructor (options, socketServer) {

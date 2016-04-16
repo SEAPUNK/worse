@@ -4,7 +4,7 @@ import {EventEmitter} from 'events'
 
 import promiseLimit from 'promise-limit'
 
-import WSServerOptions from './ServerOptions'
+import {WSServerOptions} from './options'
 import WSServerListener from './ServerListener'
 
 export default class WSServer {
