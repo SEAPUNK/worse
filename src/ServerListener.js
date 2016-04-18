@@ -47,8 +47,6 @@ export default class WSServerListener {
         throw new Error('Listener is already attached')
       }
 
-      // TODO: allowHalfOpen?
-
       // TODO
     })
   }
