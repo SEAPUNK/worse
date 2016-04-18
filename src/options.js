@@ -8,16 +8,14 @@ const SERVER_DEFAULTS = {
 }
 
 const SERVER_LISTENER_DEFAULTS = {
-  // Host to accept connections from.
-  // Can be a String, an Array<String>, or null.
+  // Hostname to use when creating server.
+  // Can be whatever `http.Server.listen()` accepts for the `hostname` param.
   //
-  // Comparison is done on connection upgrade, and it
-  // checks against the HTTP 'Host' header.
+  // This is applied to listener-created servers, as the `hostname` param on
+  // `http.Server.listen()` function.
   //
-  // String: Host to accept.
-  // Array<String>: List of hosts to accept
-  // null: Accept all hosts
-  host: null,
+  // If falsy, hostname is omitted entirely from the call to `.listen()`.
+  hostname: null,
 
   // Path(s) to accept WebSocket connections on.
   // Can be a String, an Array<String>, or null.
@@ -44,6 +42,8 @@ const SERVER_LISTENER_DEFAULTS = {
   // String: Path to accept.
   // Array<String>: List of paths to accept.
   // null: Accept all paths
+  //
+  // Converted to a Set, or null.
   path: null,
 
   // Port to have the created HTTP server listen on.
@@ -66,17 +66,6 @@ export class WSServerListenerOptions extends Options {
   constructor (options, defaults) {
     super(options, SERVER_LISTENER_DEFAULTS)
 
-    const host = this.get('host')
-    if (
-      host &&
-      (
-        typeof host !== 'string' &&
-        !Array.isArray(host)
-      )
-    ) {
-      throw new Error('Invalid value provided for host')
-    }
-
     const path = this.get('path')
     if (
       path &&
@@ -87,6 +76,12 @@ export class WSServerListenerOptions extends Options {
     ) {
       throw new Error('Invalid value provided for path')
     }
+
+    if (typeof path === 'string') {
+      this.set('path', new Set([path]))
+    } else if (Array.isArray(path)) {
+      this.set('path', new Set(path))
+    } // else do nothing
 
     const port = this.get('port')
     if (port && typeof port !== 'number') {

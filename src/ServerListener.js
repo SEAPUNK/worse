@@ -1,5 +1,6 @@
 'use strict'
 
+import {createBasicHTTPServer} from './util'
 import {WSServerListenerOptions} from './options'
 
 export default class WSServerListener {
@@ -16,6 +17,12 @@ export default class WSServerListener {
 
     // Set of WSServerClients that are associated with this listener.
     this.clients = new Set()
+
+    if (this.isHttpServerCreator) {
+      this.httpServer = createBasicHTTPServer(options)
+    } else {
+      this.httpServer = options.get('server')
+    }
   }
 
   // Attaches the listener. This will (depending on the options)
@@ -39,6 +46,9 @@ export default class WSServerListener {
       if (this.isAttached) {
         throw new Error('Listener is already attached')
       }
+
+      // TODO: allowHalfOpen?
+
       // TODO
     })
   }
