@@ -18,6 +18,9 @@ export default class WSServer {
     // Set of WSServerListeners.
     this.listeners = new Set()
 
+    // Set of WSServerClients that are associated with this listener.
+    this.clients = new Set()
+
     // Event emitter. We aren't extending it and using it as a prop instead
     // to mitigate all the headaches that come with variable and method
     // overriding.
@@ -34,6 +37,25 @@ export default class WSServer {
     this.stop = this.removeAllListeners
   }
 
+  // Handles connection upgrades, creating WSServerClient instances.
+  // TODO: explain what this does
+  //
+  // This method can be used by itself, if you prefer to not use listeners.
+  //
+  // Returns a Promise, which
+  // * resolves with the WSServerClient instance if
+  //   - the upgrade was handled correctly
+  // * rejects if
+  //   - TODO
+  handleUpgrade (req, socket, upgradeHead, listener) {
+    // TODO: handling the upgrade
+
+    if (listener) listener.clients.add(client)
+    this.clients.add(client)
+    this.events.emit('connection', client)
+    return client
+  }
+
   // Add a listener to the server.
   // Returns a Promise, which
   // * resolves if
@@ -45,7 +67,7 @@ export default class WSServer {
   addListener (options) {
     let listener
     return Promise.resolve().then(() => {
-      listener = new WSServerListener(options)
+      listener = new WSServerListener(options, this)
       return listener.attach()
     }).then(() => {
       this.listeners.add(listener)
