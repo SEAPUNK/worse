@@ -13,12 +13,12 @@ export default class WSServerListener {
     this.isAttached = false
 
     // Whether the httpServer that was created is our own.
-    this.isHttpServerCreator = !options.get('server')
+    this.isHTTPServerCreator = !options.get('server')
 
     // Set of WSServerClients that are associated with this listener.
     this.clients = new Set()
 
-    if (this.isHttpServerCreator) {
+    if (this.isHTTPServerCreator) {
       this.httpServer = createBasicHTTPServer(options)
     } else {
       this.httpServer = options.get('server')
@@ -46,8 +46,11 @@ export default class WSServerListener {
       if (this.isAttached) {
         throw new Error('Listener is already attached')
       }
-
-      // TODO
+      // TODO: common HTTP server stuff
+    }).then(() => {
+      if (this.isHTTPServerCreator) {
+        return startHTTPListen(this)
+      }
     })
   }
 
@@ -67,4 +70,9 @@ export default class WSServerListener {
       // TODO
     })
   }
+}
+
+// TODO
+function startHTTPListen (listener) {
+  // TODO
 }
