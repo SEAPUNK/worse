@@ -12,7 +12,7 @@ export function createBasicHTTPServer (options) {
     let returnCode = 426
 
     if (path && !path.has(requestedPath)) {
-      returnCode = 426
+      returnCode = 404
     }
 
     const body = http.STATUS_CODES[returnCode]
