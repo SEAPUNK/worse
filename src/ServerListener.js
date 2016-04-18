@@ -47,6 +47,8 @@ export default class WSServerListener {
         throw new Error('Listener is already attached')
       }
       // TODO: common HTTP server stuff
+      // TODO: _webSocketPaths (https://github.com/websockets/ws/blob/master/lib/WebSocketServer.js#L64-L74)
+      // TODO: server upgrade
     }).then(() => {
       if (this.isHTTPServerCreator) {
         return startHTTPListen(this)
@@ -74,5 +76,7 @@ export default class WSServerListener {
 
 // TODO
 function startHTTPListen (listener) {
-  // TODO
+  // TODO server.listen(port, hostname, callback);
+  // TODO server error
+  // TODO server listening event (part of callback?)
 }
