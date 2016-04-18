@@ -12,10 +12,9 @@ export default class WSServerListener {
     this.isAttached = false
 
     // Whether the httpServer that was created is our own.
-    // TODO
-    this.isHttpServerCreator = false
+    this.isHttpServerCreator = !options.get('server')
 
-    // Set of clients that are associated with this listener.
+    // Set of WSServerClients that are associated with this listener.
     this.clients = new Set()
   }
 

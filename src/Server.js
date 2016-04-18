@@ -34,7 +34,6 @@ export default class WSServer {
 
     // Aliases, for familiarity's sake.
     this.listen = this.addListener
-    this.stop = this.removeAllListeners
   }
 
   // Handles connection upgrades, creating WSServerClient instances.
@@ -114,6 +113,40 @@ export default class WSServer {
         promises.push(promise)
       }
       return Promise.all(promises)
+    })
+  }
+
+  // Disconnects all clients.
+  //
+  // TODO
+  stopClients () {
+    // TODO
+  }
+
+  // Disconnects all clients that have been created through direct calls to
+  // handleUpgrade.
+  //
+  // TODO
+  stopStandaloneClients () {
+    // TODO
+  }
+
+  // Fully stops the server. Removes all listeners AND removes any remaining
+  // non-listener clients.
+  // Limit is passed to `removeAllListeners`.
+  //
+  // Rejects if removeAllListeners or stopStandaloneClients rejects, or if
+  // there are clients remaining after calling removeAllListeners
+  // and stopStandaloneClients.
+  stop (limit) {
+    return Promise.resolve().then(() => {
+      return this.removeAllListeners(limit)
+    }).then(() => {
+      return this.stopStandaloneClients()
+    }).then(() => {
+      if (this.clients.size) {
+        throw new Error(`[BUG] There are still ${this.clients.size} connected to this server, despite detaching all listeners and stopping all standalone clients.`)
+      }
     })
   }
 }
