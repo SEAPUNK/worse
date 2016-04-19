@@ -25,6 +25,13 @@ export default class WSServerListener {
     }
   }
 
+  // HTTP upgrade handler for the server. Passes values to a separate function call.
+  // This function exists only so we can keep a reference to the function that
+  // is listening to the 'upgrade' HTTP server event.
+  _handleServerUpgrade (req, socket, upgradeHead) {
+    return handleServerUpgrade(this, req, socket, upgradeHead)
+  }
+
   // Attaches the listener. This will (depending on the options)
   // create an HTTP server listening on a port or attach itself to a HTTP(S)
   // server.
@@ -46,9 +53,32 @@ export default class WSServerListener {
       if (this.isAttached) {
         throw new Error('Listener is already attached')
       }
-      // TODO: common HTTP server stuff
-      // TODO: _webSocketPaths (https://github.com/websockets/ws/blob/master/lib/WebSocketServer.js#L64-L74)
-      // TODO: server upgrade
+      const httpServer = this.httpServer
+      if (typeof httpServer._webSocketPaths !== 'object') httpServer._webSocketPaths = {}
+
+      const paths = this.options.get('path')
+      const wsPaths = httpServer._webSocketPaths
+
+      const conflictError = new Error('There must be only one WebSocket server listening on the same HTTP server path.')
+      if (!paths) {
+        if (wsPaths['%%WSPATHALL%%']) {
+          throw conflictError
+        }
+        wsPaths['%%WSPATHALL%%'] = this
+      } else {
+        if (wsPaths['%%WSPATHALL%%']) {
+          throw conflictError
+        }
+
+        for (let path of paths) {
+          if (wsPaths[path]) {
+            throw conflictError
+          }
+          wsPaths[path] = this
+        }
+      }
+
+      httpServer.on('upgrade', this._handleServerUpgrade)
     }).then(() => {
       if (this.isHTTPServerCreator) {
         return startHTTPListen(this)
@@ -74,9 +104,38 @@ export default class WSServerListener {
   }
 }
 
-// TODO
+// Starts listening to our self-created server.
+// Returns a promise, that resolves when the listen callback
+// succeeded without an error, rejecting otherwise.
+//
+// If a server error occurs (via the error event), the listener will
+// automatically detach, and emit an 'error' event on the server that is
+// responsible for this listener.
 function startHTTPListen (listener) {
-  // TODO server.listen(port, hostname, callback);
-  // TODO server error
-  // TODO server listening event (part of callback?)
+  return new Promise((resolve, reject) => {
+    const httpServer = listener.httpServer
+    const options = listener.options
+
+    httpServer.on('error', (err) => {
+      // TODO: Handling of error
+    })
+
+    function listenCallback (err) {
+      if (err) return reject(err)
+      return resolve()
+    }
+
+    let port = options.get('port') || 0
+    const hostname = options.get('hostname')
+
+    if (hostname) {
+      httpServer.listen(port, hostname, listenCallback)
+    } else {
+      httpServer.listen(port, listenCallback)
+    }
+  })
+}
+
+function handleServerUpgrade (listener, req, socket, upgradeHead) {
+
 }

@@ -30,7 +30,7 @@ const SERVER_LISTENER_DEFAULTS = {
   // }
   // ```
   // Servers that accept all paths will use the `_webSocketPaths` property named
-  // '%%WSPATHALL%%'.
+  // '%%WSPATHALL%%'. (TODO: specific path name escaping)
   //
   // This is so different WebSocket servers do not listen on the same path,
   // causing conflicts.
@@ -57,6 +57,9 @@ const SERVER_LISTENER_DEFAULTS = {
   // HTTP server to use for upgrade handling.
   // Cannot be used with `port`. If `port` is defined with `server`,
   // the listener creator will throw an error.
+  //
+  // Note that you are responsible for handling the HTTP server errors
+  // if they occur.
   //
   // Must be an instance of nodejs's http.Server or https.Server.
   server: null
