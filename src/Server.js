@@ -41,12 +41,31 @@ export default class WSServer {
   //
   // This method can be used by itself, if you prefer to not use listeners.
   //
+  // TODO: explain the potential danger of unhandled upgraded sockets
+  //
   // Returns a Promise, which
   // * resolves with the WSServerClient instance if
   //   - the upgrade was handled correctly
   // * rejects if
   //   - TODO
-  handleUpgrade (req, socket, upgradeHead, listener) {
+  handleUpgrade (req, socket, _upgradeHead, listener) {
+    // Copy the upgrade head.
+    // See https://github.com/websockets/ws/blob/0669cae044d1902957acc7c89e1edfcf956f2de8/lib/WebSocketServer.js#L85
+    // TODO: Is this really necessary?
+    const upgradeHead = new Buffer(_upgradeHead.length)
+    _upgradeHead.copy(upgradeHead)
+
+
+    if (listener) {
+      const pathCheckStatus = checkSocketPath()
+      if (pathCheckStatus === 1) {
+        // This means that 
+      } else if (pathCheckStatus === 2) {
+        // This means 
+      }
+      return socket.close()
+    }
+    checkSocketPath()
     // TODO: handling the upgrade
 
     if (listener) listener.clients.add(client)
@@ -149,4 +168,25 @@ export default class WSServer {
       }
     })
   }
+}
+
+// This function makes sure that this socket is okay to be connected.
+// Basically, this does two things:
+//
+// 1. Makes sure that the upgrade header asks for 'websocket'.
+//    If it is not 'websocket', we return 2.
+// 2. Checks the request path, and checks the listener. If there is a listener,
+//    and if the listener does not support this path, then we check the
+//
+// Returns one of three codes:
+//
+// 0 - Socket is fine to connect, continue the upgrade.
+// 1 - Socket is a WebSocket connection, but there is no path to handle it.
+//     Handler should respond with 400, and close the connection.
+// 2 - Socket is either not a WebSocket connection, or another server is supposed
+//     to handle this upgrade. Don't do anything.
+// TODO: listener option: websocketOnly
+function checkSocketPath (listener, req) {
+  if (!checkSocketPath(listener, req.path)) return
+
 }

@@ -25,11 +25,12 @@ export default class WSServerListener {
     }
   }
 
-  // HTTP upgrade handler for the server. Passes values to a separate function call.
+  // HTTP upgrade handler for the server.
+  // Passes values to server's handleUpgrade function.
   // This function exists only so we can keep a reference to the function that
   // is listening to the 'upgrade' HTTP server event.
   _handleServerUpgrade (req, socket, upgradeHead) {
-    return handleServerUpgrade(this, req, socket, upgradeHead)
+    return this.socketServer.handleUpgrade(req, socket, upgradeHead, this)
   }
 
   // Attaches the listener. This will (depending on the options)
@@ -118,6 +119,7 @@ function startHTTPListen (listener) {
 
     httpServer.on('error', (err) => {
       // TODO: Handling of error
+      err
     })
 
     function listenCallback (err) {
@@ -134,8 +136,4 @@ function startHTTPListen (listener) {
       httpServer.listen(port, listenCallback)
     }
   })
-}
-
-function handleServerUpgrade (listener, req, socket, upgradeHead) {
-
 }
