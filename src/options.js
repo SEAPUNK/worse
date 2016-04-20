@@ -4,7 +4,6 @@ const http = require('http')
 const https = require('https')
 
 const SERVER_DEFAULTS = {
-
 }
 
 const SERVER_LISTENER_DEFAULTS = {
@@ -62,7 +61,22 @@ const SERVER_LISTENER_DEFAULTS = {
   // if they occur.
   //
   // Must be an instance of nodejs's http.Server or https.Server.
-  server: null
+  server: null,
+
+  // Whether to close upgrade request sockets early if the socket
+  // from the HTTP upgrade:
+  //
+  // * Does not have an Upgrade handler that equals 'websocket'
+  // * Is a request to a path that is unhandled by the listener, or any other
+  //   listener created by worsews.
+  //
+  // This is to close socket connections that are unknown/unhandled early, so
+  // they don't idle for an unnecessary length of time.
+  //
+  // WARNING: This is only applicable to listeners.
+  // If you call WSServer.handleUpgrade directly, it is your
+  // responsibility to handle the unhandled connections.
+  closeUnknownEarly: true
 }
 
 export class WSServerListenerOptions extends Options {

@@ -1,5 +1,7 @@
 'use strict'
 
+import url from 'url'
+import {STATUS_CODES} from 'http'
 import {EventEmitter} from 'events'
 
 import promiseLimit from 'promise-limit'
@@ -37,16 +39,23 @@ export default class WSServer {
   }
 
   // Handles connection upgrades, creating WSServerClient instances.
-  // TODO: explain what this does
+  // It confirms that the connection is a valid WebSocket connection that we
+  // can handle, and calls a function that finishes the WebSocket connection setup.
   //
   // This method can be used by itself, if you prefer to not use listeners.
   //
-  // TODO: explain the potential danger of unhandled upgraded sockets
+  // WARNING: If called directly (without a listener), you are responsible for
+  // closing the socket, if this function returns a falsy value.
+  // Otherwise, the socket will potentially idle for a while,
+  // using up one of your free socket connection spots for an unnecessary
+  // length of time.
   //
   // Returns a Promise, which
   // * resolves with the WSServerClient instance if
-  //   - the upgrade was handled correctly
+  //   - we can handle this connection upgrade
   // * rejects if
+  //   - Upgrade header does not equal 'websocket'
+  //   - We're not supposed to handle the path requested (applicable to listeners only)
   //   - TODO
   handleUpgrade (req, socket, _upgradeHead, listener) {
     // Copy the upgrade head.
@@ -55,17 +64,22 @@ export default class WSServer {
     const upgradeHead = new Buffer(_upgradeHead.length)
     _upgradeHead.copy(upgradeHead)
 
+    const closeEarly = (listener && listener.options.get('closeUnknownEarly'))
+
+    if (typeof req.headers.upgrade !== 'string' || req.headers.upgrade.toLowerCase() === 'websocket') {
+      if (closeEarly) return abortSocketHandshake(socket, 400, 'Unhandled Upgrade')
+      else return
+    }
 
     if (listener) {
-      const pathCheckStatus = checkSocketPath()
+      const pathCheckStatus = checkSocketPath(listener, req)
       if (pathCheckStatus === 1) {
-        // This means that 
-      } else if (pathCheckStatus === 2) {
-        // This means 
-      }
-      return socket.close()
+        if (closeEarly) return abortSocketHandshake(socket, 404, 'Not Found')
+        else return
+      } else if (pathCheckStatus === 2) return
     }
-    checkSocketPath()
+
+    // TODO: handle socket closes and errors
     // TODO: handling the upgrade
 
     if (listener) listener.clients.add(client)
@@ -170,23 +184,40 @@ export default class WSServer {
   }
 }
 
-// This function makes sure that this socket is okay to be connected.
-// Basically, this does two things:
-//
-// 1. Makes sure that the upgrade header asks for 'websocket'.
-//    If it is not 'websocket', we return 2.
-// 2. Checks the request path, and checks the listener. If there is a listener,
-//    and if the listener does not support this path, then we check the
+// This function makes sure that this socket is okay to be connected to the specified path.
 //
 // Returns one of three codes:
 //
 // 0 - Socket is fine to connect, continue the upgrade.
-// 1 - Socket is a WebSocket connection, but there is no path to handle it.
-//     Handler should respond with 400, and close the connection.
-// 2 - Socket is either not a WebSocket connection, or another server is supposed
-//     to handle this upgrade. Don't do anything.
-// TODO: listener option: websocketOnly
+// 1 - There is no path to handle this connection.
+//     Handler abort the handshake with the code 400,
+//     unless closeUnknownEarly is false.
+// 2 - Another server is supposed to handle this upgrade path. Don't do anything.
 function checkSocketPath (listener, req) {
-  if (!checkSocketPath(listener, req.path)) return
+  const path = listener.options.get('path')
+  if (!path) return 0
+  const parsedURL = url.parse(req.url)
+  const httpPath = parsedURL ? parsedURL.pathname : null
+  if (path.has(httpPath)) return 0
+  if (
+    listener.httpServer._webSocketPaths[httpPath] ||
+    listener.httpServer._webSocketPaths['%%WSPATHALL%%'] // TODO: is this necessary?
+  ) return 2
+  return 1
+}
 
+// Aborts the socket handshake. Tries to end the connection with an HTTP status,
+// not doing anything if the socket is already closed (not writable).
+function abortSocketHandshake (socket, code, text) {
+  if (socket.writable) {
+    const response = [
+      `HTTP/1.1 ${code} ${STATUS_CODES[code]}`,
+      'Content-Type: text/plain',
+      '',
+      text,
+      '',
+      ''
+    ].join('\r\n')
+    socket.end(response)
+  }
 }
