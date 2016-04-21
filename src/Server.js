@@ -66,26 +66,38 @@ export default class WSServer {
 
     const closeEarly = (listener && listener.options.get('closeUnknownEarly'))
 
-    if (typeof req.headers.upgrade !== 'string' || req.headers.upgrade.toLowerCase() === 'websocket') {
-      if (closeEarly) return abortSocketHandshake(socket, 400, 'Unhandled Upgrade')
-      else return
+    // Validate initial headers
+    if (!validateWebsocketUpgradeHeaders(req, socket, upgradeHead, listener, closeEarly)) {
+      return
     }
 
+    // Validate path
     if (listener) {
       const pathCheckStatus = checkSocketPath(listener, req)
       if (pathCheckStatus === 1) {
-        if (closeEarly) return abortSocketHandshake(socket, 404, 'Not Found')
-        else return
+        return maybeAbortSocketHandshake(closeEarly, socket, 404, 'Not Found')
       } else if (pathCheckStatus === 2) return
     }
 
-    // TODO: handle socket closes and errors
-    // TODO: handling the upgrade
+    // TODO: Origin checking
 
-    if (listener) listener.clients.add(client)
-    this.clients.add(client)
-    this.events.emit('connection', client)
-    return client
+    // TODO: Handle socket closes and errors in preparation for async
+    //       function calls
+
+    // -- async --
+
+    // TODO: Custom validation
+    // TODO: Protocol selection (and custom override)
+    // TODO: Extensions
+
+    // TODO: Finalizing handshake and accepting connection
+
+    function finalizeHandshake (client) {
+      if (listener) listener.clients.add(client)
+      this.clients.add(client)
+      this.events.emit('connection', client)
+      return client
+    }
   }
 
   // Add a listener to the server.
@@ -208,16 +220,70 @@ function checkSocketPath (listener, req) {
 
 // Aborts the socket handshake. Tries to end the connection with an HTTP status,
 // not doing anything if the socket is already closed (not writable).
-function abortSocketHandshake (socket, code, text) {
+function abortSocketHandshake (socket, code, text, headers) {
   if (socket.writable) {
-    const response = [
+    let response = [
       `HTTP/1.1 ${code} ${STATUS_CODES[code]}`,
-      'Content-Type: text/plain',
+      'Content-Type: text/plain'
+    ]
+
+    if (headers) response = response.concat(headers)
+
+    const body = text || STATUS_CODES[code]
+
+    response = response.concat([
       '',
-      text,
+      body,
       '',
       ''
-    ].join('\r\n')
-    socket.end(response)
+    ])
+
+    socket.end(response.join('\r\n'))
   }
+}
+
+// Aborts the socket handshake (if closeEarly is true), or does nothing.
+function maybeAbortSocketHandshake (closeEarly, socket, code, text, headers) {
+  if (closeEarly) return abortSocketHandshake(socket, code, text, headers)
+}
+
+// Validates the upgrade handshake's required parts.
+// Returns false if the validation failed (in which it probably closed the socket by itself).
+// Validation is done via RFC6455's section 4.2.1.
+function validateWebsocketUpgradeHeaders (req, socket, upgradeHead, listener, closeEarly) {
+  // 1 should be handled internally
+
+  // 2
+  if (typeof req.headers.host !== 'string') {
+    return maybeAbortSocketHandshake(closeEarly, socket, 400)
+  }
+
+  // 3
+  if (typeof req.headers.upgrade !== 'string' || req.headers.upgrade.toLowerCase() === 'websocket') {
+    return maybeAbortSocketHandshake(closeEarly, socket, 400, 'Unhandled Upgrade')
+  }
+
+  // 4 should be handled internally
+
+  // 5
+  const secWebsocketKey = req.headers['sec-websocket-key']
+  if (typeof secWebsocketKey !== 'string' || secWebsocketKey === '') {
+    return maybeAbortSocketHandshake(closeEarly, socket, 400)
+  }
+
+  if (Buffer.from(secWebsocketKey, 'base64').length !== 16) {
+    return maybeAbortSocketHandshake(closeEarly, socket, 400)
+  }
+
+  // 6
+  const secWebsocketVersion = req.headers['sec-websocket-version']
+  if (secWebsocketVersion !== '13') {
+    return maybeAbortSocketHandshake(closeEarly, socket, 426, 'Unsupported Version', [
+      'Sec-WebSocket-Version: 13'
+    ])
+  }
+
+  // 7 to 10 are optional
+
+  return true
 }
