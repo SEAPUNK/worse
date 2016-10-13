@@ -13,11 +13,11 @@ export default class WSServer {
   // Construct a new server.
   //
   // Optionally pass an `options` object, to override the defaults provided by
-  // ServerOptions.
+  // WSServerOptions.
   constructor (options) {
     this.options = new WSServerOptions(options)
 
-    // Set of WSServerListeners.
+    // Set of listeners (instances of WSListenerBase).
     this.listeners = new Set()
 
     // Set of WSServerClients that are associated with this listener.
@@ -39,6 +39,7 @@ export default class WSServer {
   }
 
   // Handles connection upgrades, creating WSServerClient instances.
+  //
   // It confirms that the connection is a valid WebSocket connection that we
   // can handle, and calls a function that finishes the WebSocket connection setup.
   //
